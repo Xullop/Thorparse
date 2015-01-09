@@ -1,0 +1,29 @@
+Erreur Modele
+100 mauvais pattern de ligne log
+101 mauvais Fichier Log
+102 
+103 mauvais pattern élément swtor
+104 pas de qui lors de la construction d'un combat entity
+105 mauvais pattern de combat entity
+106 mauvais pattern playable caracter
+107 mauvais pattern non playable caracter
+108 mauvais pattern de time hh:mm:ss.ddd
+109 mauvais ouput pattern
+
+Erreurs Sql et stockage Fichier
+
+200 erreur sql
+201 Objet Non Trouvé
+202 Mappeur SQL Non Trouvé
+203 propriété non accessible
+204 Entité déjà enregistrée
+211 UPLOAD_ERR_OK ou !is_uploaded_file
+212 !file_get_contents
+
+Erreur I/O
+300
+301 formulaire incomplet
+
+Erreurs vues
+500 mauvais link
+501 mauvaise page
