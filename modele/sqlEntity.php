@@ -282,7 +282,7 @@ abstract class SqlEntity extends Entity
 		}	
 	}
 	
-	public static function select($objet,$objectPropsToSelect=array(),$whereStr="",$whereArray=array())
+	public static function select($objet,$objectPropsToSelect=array(),$whereStr="",$whereArray=array(),$before="",$after="")
 	{
 		try
 		{
@@ -306,7 +306,7 @@ abstract class SqlEntity extends Entity
 				$column="*";
 			}
 		
-			$str="SELECT ".$column." FROM ".$tableName." WHERE ".$whereStr;
+			$str=$before."SELECT ".$column." FROM ".$tableName." WHERE ".$whereStr.$after;
 		
 			// Préparation de la requête
 			$q = self::$Bdd->prepare($str);	

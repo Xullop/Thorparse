@@ -42,26 +42,34 @@ class RaidEncounter extends Entity
 			$this->RaidEncounter->FusionneFights();
 			
 			$autresCombats=array();
-			$whereArray=array("CurrentDate"=>$combat->getDate(),"Id"=>$combat->getId(),"id_serveur"=>0,"Acteur"=>$combat->getActeur());
+			$whereArray=array("CurrentDate"=>$combat->getDate(),"id_serveur"=>0,"CurrentStartTime"=>$combat->getStartTime(),"Acteur"=>$combat->getActeur());
 
 			$autresCombats=$combat->select($combat,
 											array("Id",
 													"Date",
 													"StartTime",
 													"EndTime",
-													"DATEDIFF(:CurrentDate, Date) as DaysBetweenDates"),
-											"id_serveur=:id_serveur AND Acteur=:Acteur AND Id!=:Id ORDER BY DaysBetweenDates ASC, StartTime ASC LIMIT 0,20",
-											$whereArray);
+													"DATEDIFF(:CurrentDate, Date) as DayBetweenFights",
+													"ABS(:CurrentStartTime-StartTime) as SecondsBetweenFights"),
+											"id_serveur=:id_serveur AND Acteur=:Acteur",
+											$whereArray,
+											"SELECT * FROM ( ",
+											" ORDER BY DayBetweenFights ASC, SecondsBetweenFights ASC LIMIT 0,20 ) T ORDER BY Date ASC, StartTime ASC");
 			
 			
 			
 			if (count($autresCombats)>0)
-			foreach ($autresCombats as $autrecombat)
 			{
-				$start = $autrecombat->msToTime($autrecombat->getStartTime());
-				$duree = $autrecombat->getDuree();
-				$linkStr= $start." : ".$duree." s";
-				$left.=\einherjar\lib\Combat::linkIt($autrecombat,$linkStr)."<br/>";
+				foreach ($autresCombats as $autrecombat)
+				{
+					$start = $autrecombat->msToTime($autrecombat->getStartTime());
+					$duree = $autrecombat->getDuree();
+					$linkStr= $start." : ".$duree." s";
+					$left.= $autrecombat->getId()==$combat->getId() ? $linkStr : \einherjar\lib\Combat::linkIt($autrecombat,$linkStr);
+					$left.="<br/>";
+				}
+				
+				$left.="<a href=\"?page=logSearch\">".$this->Langue->get("link_viewAll")."</a>";
 			}
 			
 			$html=$this->RaidEncounterVue->display();
