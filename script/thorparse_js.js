@@ -452,11 +452,11 @@ function thorparse_secondsToTime(newVal)
 
 	var minute_calc = Math.floor(newVal/60).mod(60);	
 
-	var minute = (minute_calc>10) ? minute_calc : "0"+minute_calc;
+	var minute = (minute_calc>=10) ? minute_calc : "0"+minute_calc;
 
 	var hour_calc = (Math.floor(newVal/3600) ).mod(24);	
 	
-	var hour = (hour_calc>10) ? hour_calc : "0"+hour_calc;
+	var hour = (hour_calc>=10) ? hour_calc : "0"+hour_calc;
 	
 	return { heures:hour, minutes:minute, secondes:seconde };
 }

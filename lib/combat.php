@@ -1,11 +1,11 @@
 <?php
 namespace einherjar\lib;
 
-class Combat extends Entity
+class Combat
 {	
-	public function linkIt($text="")
+	public static function linkIt($combat,$text="")
 	{	
-		$html="<a href='?page=raidEncounter&id_combat=".$this->ObjetModel->getId()."'>".$text."</a>\n";
+		$html="<a href='?page=raidEncounter&id_combat=".$combat->getId()."'>".$text."</a>\n";
 
 		return $html;
 	}

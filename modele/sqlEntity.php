@@ -63,8 +63,19 @@ abstract class SqlEntity extends Entity
 		
 		Sqlentity::loadTable($objet);
 		
-		foreach($props as $prop)
+		foreach($props as $propArray)
 			{
+				if (is_array($propArray))
+				{
+					$prop=$propArray[0];
+					$op=$propArray[1];
+				}
+				else
+				{
+					$prop=$propArray;
+					$op="=";
+				}
+			
 				$method="get".$prop;
 				
 				if (!method_exists($objet,$method))
@@ -75,7 +86,7 @@ abstract class SqlEntity extends Entity
 				if (is_string($value) || is_int($value))
 				{
 				
-					$str.=$prop."=:".$prop.$lien;
+					$str.=$prop.$op.":".$prop.$lien;
 					$tab[$prop]=$value;
 				}
 				else if(is_array($value) && count($value)>0 && !in_array($prop,self::$Mapping[$tableName]["agrege"]))
@@ -96,13 +107,13 @@ abstract class SqlEntity extends Entity
 						$buffer.=strval($v)."\n";
 					}
 					
-					$str.= $prop."=:".$prop.$lien;
+					$str.= $prop.$op.":".$prop.$lien;
 					$tab[$prop]=substr($buffer,0,strlen($buffer)-1);
 				}
 				else if (is_object($value))
 				{
 					$champ="id_".lcfirst(array_pop(explode("\\",get_class($value))));
-					$str.=$champ."=:".$champ.$lien;
+					$str.=$champ.$op.":".$champ.$lien;
 					$tab[$champ]=$value->getId();
 				}
 			}
@@ -211,16 +222,18 @@ abstract class SqlEntity extends Entity
 			$column="";
 			
 			if (count($objectPropsToSelect))
-			foreach($objectPropsToSelect as $n=>$prop)
 			{
-				$column.=$prop.",";
+				foreach($objectPropsToSelect as $prop)
+				{
+					$column.=$prop.",";
+				}
+				
+				$column=substr($column,0,strlen($column)-1);
 			}
 			else
 			{
 				$column="*";
 			}
-			
-
 			
 			$str="SELECT ".$column." FROM ".$tableName." WHERE ";
 			
@@ -229,7 +242,7 @@ abstract class SqlEntity extends Entity
 			$tab=$res["sqlValues"];
 			$str.=$res["sqlString"];
 			
-			// Préparation de la requête d'insertion.
+			// Préparation de la requête
 			$q = self::$Bdd->prepare($str);	
 
 			foreach ($tab as $key=>$val)
@@ -244,21 +257,93 @@ abstract class SqlEntity extends Entity
 			$queryResult=$q->fetch(\PDO::FETCH_ASSOC);
 			
 			if (!$queryResult)
-				throw new \einherjar\Exception("erreur_combatNotFound",200);
+				throw new \einherjar\Exception("erreur_pageNotFound",201);
 			
-			self::$Bdd->commit();
-			
-			foreach($queryResult as $prop=>$val)
-			{
-				if (method_exists($this,"get".$prop))
-					$this->{"set".$prop}($val);
-			}
+				self::$Bdd->commit();
+				
+				foreach($queryResult as $prop=>$val)
+				{
+					if (method_exists($this,"get".$prop))
+						$this->{"set".$prop}($val);
+				}
 			
 			return 1;
 		}
 		catch (\PDOException $e)
 		{
 			self::$Bdd->rollBack();
+		
+			switch ($e->getCode())
+			{
+				default:
+					throw new \einherjar\Exception("erreur_model",200);
+				break;
+			}
+		}	
+	}
+	
+	public static function select($objet,$objectPropsToSelect=array(),$whereStr="",$whereArray=array())
+	{
+		try
+		{
+			self::$Bdd->beginTransaction();
+
+			$tableName=self::tableName($objet);
+	
+			$column="";
+	
+			if (count($objectPropsToSelect))
+			{
+				foreach($objectPropsToSelect as $prop)
+				{
+					$column.=$prop.",";
+				}
+				
+				$column=substr($column,0,strlen($column)-1);
+			}
+			else
+			{
+				$column="*";
+			}
+		
+			$str="SELECT ".$column." FROM ".$tableName." WHERE ".$whereStr;
+		
+			// Préparation de la requête
+			$q = self::$Bdd->prepare($str);	
+		
+			foreach ($whereArray as $key=>$val)
+			{
+				$param = is_int($val) ? \PDO::PARAM_INT : \PDO::PARAM_STR;
+				$q->bindValue(':'.$key, $val, $param);
+			}
+		
+			// Exécution de la requête.
+			$q->execute();
+		
+			$queryResult=$q->fetchAll(\PDO::FETCH_ASSOC);
+		
+			$objetsResult=array();
+		
+			if (!$queryResult)
+				throw new \einherjar\Exception("erreur_pageNotFound",201);
+
+				
+			$className=get_class($objet);
+			
+			foreach ($queryResult as $row)
+			{
+				$objetsResult[]=new $className($row);
+			}
+			
+			self::$Bdd->commit();
+			
+			return $objetsResult;
+		}
+		catch (\PDOException $e)
+		{
+			self::$Bdd->rollBack();
+		
+			echo $e;die();
 		
 			switch ($e->getCode())
 			{

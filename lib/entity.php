@@ -193,8 +193,7 @@ abstract class Entity
 	
 	public static function pageTroisColonnes($html="",$left="",$right="")
 	{
-		//$this->pageLeft($left)
-		$html="<div class=\"container-fluid\"><div class=\"row\">".""."<div class=\"col-sm-6 col-sm-offset-3 col-md-6 col-md-offset-2 main\">".$html."</div>".self::pageRight($right)."</div></div>";
+		$html=self::pageLeft($left)."<div class=\"container-fluid\"><div class=\"row\">".""."<div class=\"col-sm-6 col-sm-offset-3 col-md-6 col-md-offset-2 main\">".$html."</div>".self::pageRight($right)."</div></div>";
 		return $html;
 	}
 	
@@ -241,12 +240,7 @@ abstract class Entity
 	{
 	
       $html="<div class=\"col-sm-3 col-md-2 sidebar\">
-				  <ul class=\"nav nav-sidebar\">
-					<li class=\"active\"><a href=\"#\">Upload <span class=\"sr-only\">(current)</span></a></li>
-					<li><a href=\"#\">Logs</a></li>
-					<li><a href=\"#\">Profil</a></li>
-					<li><a href=\"#\">Forum</a></li>
-				  </ul>
+				  ".$left."
 				</div>";
 		return $html;
 	}

@@ -7,25 +7,28 @@ class Combat extends SqlEntity
 
 	public 	$Date,
 			$StartTime,
+			$EndTime,
 			$Acteur,
 			$Logs;
 			
 	private $Participants,
-			$Duree;
+			$Duree=-1;
 	
 	public static function NewFight($logs,$date,$acteur)
 	{	
 		$participantsNewFight=array();
 	
-		foreach ($logs as $n=>$log)
+		foreach ($logs as $log)
 		{
 			if (!in_array($log->getSource(),$participantsNewFight))
 				$participantsNewFight[]=$log->getSource();
 			if (!in_array($log->getCible(),$participantsNewFight))
 				$participantsNewFight[]=$log->getCible();
 		}
+		
+		$last=key( array_slice( $logs, -1, 1, TRUE ) ); 
 
-		$newFight=new Combat(array("logs"=>$logs,"date"=>$date,"startTime"=>($logs[0]->getTime()),"acteur"=>$acteur,"participants"=>$participantsNewFight,"_Id"=>md5($date.$acteur.$logs[0])));
+		$newFight=new Combat(array("logs"=>$logs,"date"=>$date,"startTime"=>($logs[0]->getTime()),"endTime"=>($logs[$last]->getTime()),"acteur"=>$acteur,"participants"=>$participantsNewFight));
 		
 		return $newFight;
 	}
@@ -84,6 +87,16 @@ class Combat extends SqlEntity
 		$this->StartTime=intval($s);
 	}
 	
+	public function setEndTime($s)
+	{
+		$this->EndTime=intval($s);
+	}
+	
+	public function setDuree()
+	{
+		$this->Duree=$this->EndTime-$this->StartTime;
+	}
+	
 	public function getLogs()
 	{
 		return $this->Logs;
@@ -104,9 +117,41 @@ class Combat extends SqlEntity
 		return $this->StartTime;
 	}
 	
+	public function getEndTime()
+	{
+		return $this->EndTime;
+	}
+	
 	public function getParticipants()
 	{
 		return $this->Participants;
+	}
+	
+	public function getDuree($seconde=true)
+	{
+		if ($this->Duree==-1)
+			$this->setDuree();
+		
+		return $seconde ? floor($this->Duree/1000) : $this->Duree;
+	}
+	
+	public static function msToTime($ms)
+	{
+		$ms=$ms/1000;
+	
+		$seconde_calc = $ms%60;
+
+		$seconde = ($seconde_calc>=10) ? $seconde_calc : "0".$seconde_calc;
+
+		$minute_calc = floor($ms/60)%60;	
+
+		$minute = ($minute_calc>=10) ? $minute_calc : "0".$minute_calc;
+
+		$hour_calc = floor($ms/3600)%24;
+
+		$hour = ($hour_calc>=10) ? $hour_calc : "0".$hour_calc;
+	
+		return $hour.":".$minute.":".$seconde;
 	}
 }
 

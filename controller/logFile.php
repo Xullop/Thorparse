@@ -103,14 +103,12 @@ class LogFile extends Entity
 			$this->Combats[]=\einherjar\modele\Combat::NewFight($combatLogs,$date,$acteur);
 		}
 		
-		foreach ($this->Combats as $n=>$combat)
+		foreach ($this->Combats as $combat)
 		{
 			$res=$combat->enregistre();
 			if ($res==1)
 			{
-				$vueInit=array("ObjetModel"=>$combat,"Langue"=>$this->Langue);
 				$this->Combats[]=$combat;
-				$this->CombatsVue[]=new \einherjar\lib\Combat($vueInit);
 			}
 			else if ($res==2)
 			{
@@ -121,9 +119,9 @@ class LogFile extends Entity
 		if ($combatDejaRecord)
 			$this->Exceptions[]=new  \einherjar\Exception('erreur_ExistingCombats',204,"warning");
 	
-		foreach($this->CombatsVue as $n=>$combatView)
+		foreach($this->Combats as $combat)
 		{
-			$html.=$combatView->linkIt("Voir")."<br/>";
+			$html.=\einherjar\lib\Combat::linkIt($combat,"Voir")."<br/>";
 		}
 	
 		return $html;
